@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, NSStreamDelegate{
+class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, TCPSocketConnectionDelegate{
 
     //MARK: Properties
     @IBOutlet weak var lbl_Connecting: UILabel!
@@ -19,32 +19,31 @@ class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate
     
     @IBOutlet weak var tblView_Names: UITableView!
     
+    var socketConnection : TCPSocketConnection!
+    
     var arrNames : NSMutableArray = []
     
     var imagesDict = NSDictionary()
+    var btn = UIButton()
     
-    var inputStream : NSInputStream?
-    var outputStream : NSOutputStream?
     
     //MARK: LifeCycle Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        //Set Component Delegate
         txtfld_Name.delegate = self
-        
         tblView_Names.delegate = self
         tblView_Names.dataSource = self
         
-        // let socketConnection : TCPSocketConnection = TCPSocketConnection()
-        //  socketConnection.connect();
+        //Customize View
+        customizeView()
         
-        lbl_Connecting.textColor = UIColor.redColor()
-        lbl_Connecting.text = "Socket Connecting..."
-        
+        //Connect Socket
         let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
         dispatch_async(dispatch_get_global_queue(priority, 0)) { () -> Void in
-            self.connectSocket()
+           self.connectToSocket()
         }
         
         
@@ -55,7 +54,24 @@ class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate
         // Dispose of any resources that can be recreated.
     }
     
+    //Customize View Method
+    func customizeView() {
+        lbl_Connecting.textColor = UIColor.redColor()
+        lbl_Connecting.text = "Socket Connecting..."
+    }
     
+    //Connect Socket Method
+    func connectToSocket(){
+        self.socketConnection = TCPSocketConnection()
+        self.socketConnection.delegate = self;
+        self.socketConnection.connect();
+    }
+    
+    //Disconnect Socket Method
+    func disconnectSocket()
+    {
+        self.socketConnection.disConnect()
+    }
     
     
     //MARK: UITextField Delegate Methods
@@ -67,7 +83,6 @@ class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate
     }
     
     //MARK: UITableView DataSource Methods
-    
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
@@ -84,111 +99,47 @@ class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate
         return cell
     }
     
-    /* Header Methods
-    func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-    return 30;
-    }
-    
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    return imagesDict.allKeys[section] as? String
-    }
-    */
-    
     //MARK: IBActions
     @IBAction func addAction(sender: AnyObject) {
         
-        /*txtfld_Name.resignFirstResponder()
-        
-        arrNames.addObject(txtfld_Name.text!)
-        
-        txtfld_Name.text = ""
-        
-        tblView_Names.reloadData()*/
-        
+
         let textMessage = txtfld_Name.text
         
-        let data : NSData = NSData(data:(textMessage?.dataUsingEncoding(NSASCIIStringEncoding))!)
-        
-        outputStream?.write(UnsafePointer<UInt8>(data.bytes), maxLength: data.length)
+        socketConnection.sendMessage(textMessage!)
         
     }
     
-    
-    //MARK: Socket Connection
-    func connectSocket() {
+    @IBAction func disconnectClicked(sender: AnyObject) {
         
-        var readStream : Unmanaged<CFReadStream>?
-        var writeStream : Unmanaged<CFWriteStream>?
-        
-        CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, "localhost", 1337, &readStream, &writeStream)
-        
-        inputStream = readStream!.takeUnretainedValue()
-        outputStream = writeStream!.takeUnretainedValue()
-        
-        inputStream!.delegate = self
-        outputStream!.delegate = self
-        
-        inputStream!.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
-        outputStream!.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
-        
-        inputStream!.open()
-        outputStream!.open()
+        btn = sender as! UIButton
+        setConnectedOrDisconnected()
         
     }
     
-    //MARK: NSStream Delegate
-    func stream(stream: NSStream, handleEvent eventCode: NSStreamEvent) {
-        print("stream event")
+    func setConnectedOrDisconnected() {
         
-        switch eventCode {
-        case NSStreamEvent.None:
-            break
-        case NSStreamEvent.OpenCompleted:
-            print("Stream opened");
-            lbl_Connecting.textColor = UIColor.greenColor()
-            lbl_Connecting.text = "Socket Connected"
-            break
-        case NSStreamEvent.HasBytesAvailable:
-            if stream == inputStream{
-                
-                let bufferSize = 1024
-                var buffer = Array<UInt8>(count: bufferSize, repeatedValue: 0)
-                
-                var bytesRead : Int = 0
-                
-                if self.inputStream!.hasBytesAvailable{
-                    bytesRead = inputStream!.read(&buffer, maxLength: bufferSize)
-                }
-                
-                if bytesRead >= 0 {
-                    let output = NSString(bytes: &buffer, length: bytesRead, encoding: NSUTF8StringEncoding)
-                    messageReceived(output!);
-                    
-                } else {
-                    // Handle error
-                }
-                
-            }
-            break
-        case NSStreamEvent.HasSpaceAvailable:
-            break
-        case NSStreamEvent.ErrorOccurred:
-            print("Can not connect to the host!");
-            break
-        case NSStreamEvent.EndEncountered:
-            stream.close()
-            stream.removeFromRunLoop(NSRunLoop.currentRunLoop(), forMode:NSDefaultRunLoopMode)
-            break
-        default:
-            break
+        if btn.selected {
+            
+            self.connectToSocket()
+            
+            btn.selected = false
+            btn.setTitle("Disconnect", forState: UIControlState.Normal)
             
         }
-        
+        else
+        {
+            disconnectSocket()
+            
+            btn.selected = true
+            btn.setTitle("Connect", forState: UIControlState.Normal)
+        }
+
     }
     
+    
     //MARK: Receive Message
-    func messageReceived(message : NSString)
-    {
+    func messageReceived(message : NSString) {
+        
         print("message received : \(message)")
         
         arrNames.addObject(message)
@@ -198,6 +149,41 @@ class ViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate
         tblView_Names.reloadData()
         
     }
+    
+    
+    
+    //MARK: TCPSocketConnection Delegate
+    //Stream opened
+    func openStream() {
+        lbl_Connecting.textColor = UIColor.greenColor()
+        lbl_Connecting.text = "Socket Connected"
+    }
+    
+    //Receive data fron stream
+    func receiveDataFromStream(data: NSData) {
+        let messageStr = NSString(data: data, encoding: NSUTF8StringEncoding)
+        messageReceived(messageStr!)
+    }
+    
+    //Error occured when connecting stream
+    func errorOccurred() {
+        lbl_Connecting.textColor = UIColor.redColor()
+        lbl_Connecting.text = "Error In Connection"
+    }
+    
+    //End encountered or stream closed
+    func endEncountered() {
+        
+    }
+    
+    //Stream disconnected
+    func disconnectedStream() {
+        lbl_Connecting.textColor = UIColor.redColor()
+        lbl_Connecting.text = "Socket Closed..."
+        
+        messageReceived((lbl_Connecting?.text)!)
+    }
+    
 
 
 }

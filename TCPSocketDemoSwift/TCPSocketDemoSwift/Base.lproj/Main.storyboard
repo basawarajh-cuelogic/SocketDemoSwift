@@ -75,19 +75,37 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7R8-cf-U9S">
+                                <rect key="frame" x="451" y="73" width="129" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="129" id="IcK-Vs-VVh"/>
+                                    <constraint firstAttribute="height" constant="30" id="RjG-Qj-z0f"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" title="Disconnect">
+                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="disconnectClicked:" destination="35b-vj-ATA" eventType="touchUpInside" id="JKx-gG-PJ8"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="16y-TG-sqB" firstAttribute="leading" secondItem="yfs-JL-YQM" secondAttribute="leading" constant="20" id="1FJ-YL-wAV"/>
                             <constraint firstItem="Q68-6U-PLE" firstAttribute="trailing" secondItem="yfs-JL-YQM" secondAttribute="trailingMargin" id="1OT-l1-kGO"/>
                             <constraint firstItem="16y-TG-sqB" firstAttribute="top" secondItem="QJD-jo-9Pp" secondAttribute="bottom" constant="24" id="1uR-pc-XkY"/>
+                            <constraint firstItem="7R8-cf-U9S" firstAttribute="top" secondItem="16y-TG-sqB" secondAttribute="bottom" constant="8" symbolic="YES" id="3AM-eA-2xd"/>
+                            <constraint firstItem="7R8-cf-U9S" firstAttribute="bottom" secondItem="16y-TG-sqB" secondAttribute="bottom" id="CLM-uG-aGj"/>
                             <constraint firstItem="CsL-od-IwU" firstAttribute="top" secondItem="16y-TG-sqB" secondAttribute="bottom" constant="41" id="HRi-r3-7jk"/>
                             <constraint firstItem="uxq-Uk-p4F" firstAttribute="leading" secondItem="yfs-JL-YQM" secondAttribute="leadingMargin" id="K0o-1r-J6L"/>
+                            <constraint firstItem="7R8-cf-U9S" firstAttribute="top" secondItem="16y-TG-sqB" secondAttribute="bottom" constant="8" id="NAg-M9-kfX"/>
                             <constraint firstItem="Q68-6U-PLE" firstAttribute="leading" secondItem="yfs-JL-YQM" secondAttribute="leadingMargin" id="Wcw-0h-bqx"/>
                             <constraint firstItem="uxq-Uk-p4F" firstAttribute="trailing" secondItem="yfs-JL-YQM" secondAttribute="trailingMargin" id="Ydp-7m-aCw"/>
                             <constraint firstItem="CsL-od-IwU" firstAttribute="top" secondItem="QJD-jo-9Pp" secondAttribute="bottom" constant="86" id="c36-qU-eU1"/>
                             <constraint firstItem="eif-06-ZIn" firstAttribute="top" secondItem="uxq-Uk-p4F" secondAttribute="bottom" constant="21" id="cOp-QW-dYf"/>
                             <constraint firstAttribute="trailing" secondItem="16y-TG-sqB" secondAttribute="trailing" constant="20" id="hNa-7K-lVC"/>
+                            <constraint firstAttribute="trailing" secondItem="7R8-cf-U9S" secondAttribute="trailing" constant="20" id="hOA-y4-RY1"/>
                             <constraint firstItem="CsL-od-IwU" firstAttribute="trailing" secondItem="yfs-JL-YQM" secondAttribute="trailingMargin" id="ioR-5C-DLF"/>
                             <constraint firstItem="uxq-Uk-p4F" firstAttribute="bottom" secondItem="Q68-6U-PLE" secondAttribute="bottom" constant="50" id="qE8-hK-Mbc"/>
                             <constraint firstItem="eif-06-ZIn" firstAttribute="top" secondItem="uxq-Uk-p4F" secondAttribute="bottom" constant="21" id="u02-Uu-OeA"/>
@@ -102,6 +120,8 @@
                             <mask key="constraints">
                                 <exclude reference="zeP-0U-93G"/>
                                 <exclude reference="cOp-QW-dYf"/>
+                                <exclude reference="CLM-uG-aGj"/>
+                                <exclude reference="NAg-M9-kfX"/>
                             </mask>
                         </variation>
                     </view>

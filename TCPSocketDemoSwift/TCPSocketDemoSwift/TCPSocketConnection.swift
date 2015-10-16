@@ -8,12 +8,22 @@
 
 import UIKit
 
+protocol TCPSocketConnectionDelegate {
+    func openStream();
+    func receiveDataFromStream(data: NSData);
+    func errorOccurred();
+    func endEncountered();
+    func disconnectedStream();
+    
+}
+
 class TCPSocketConnection: NSObject, NSStreamDelegate {
     
     var inputStream : NSInputStream?
     var outputStream : NSOutputStream?
     var host : CFString
     var port : UInt32 = 0
+    var delegate:TCPSocketConnectionDelegate?
     
     override init() {
         self.host = "localhost"
@@ -46,8 +56,10 @@ class TCPSocketConnection: NSObject, NSStreamDelegate {
         
         switch eventCode {
          case NSStreamEvent.None:
+            print("No Stream avaliable");
             break
         case NSStreamEvent.OpenCompleted:
+            delegate?.openStream()
             print("Stream opened");
             break
         case NSStreamEvent.HasBytesAvailable:
@@ -58,14 +70,15 @@ class TCPSocketConnection: NSObject, NSStreamDelegate {
                 
                 var bytesRead : Int = 0
                 
-                while (inputStream?.hasBytesAvailable != nil){
+                if (inputStream?.hasBytesAvailable != nil){
                     bytesRead = inputStream!.read(&buffer, maxLength: bufferSize)
                 }
                 
                 if bytesRead >= 0 {
-                    let output = NSString(bytes: &buffer, length: bytesRead, encoding: NSUTF8StringEncoding)
                     
-                    messageReceived(output!);
+                    let data = NSData(bytes:&buffer, length: bytesRead)
+                    
+                    delegate?.receiveDataFromStream(data)
                     
                 } else {
                     // Handle error
@@ -76,11 +89,13 @@ class TCPSocketConnection: NSObject, NSStreamDelegate {
         case NSStreamEvent.HasSpaceAvailable:
             break
         case NSStreamEvent.ErrorOccurred:
+            delegate?.endEncountered()
             print("Can not connect to the host!");
             break
         case NSStreamEvent.EndEncountered:
             stream.close()
             stream.removeFromRunLoop(NSRunLoop.currentRunLoop(), forMode:NSDefaultRunLoopMode)
+            delegate?.endEncountered()
             break
         default:
             break
@@ -89,10 +104,21 @@ class TCPSocketConnection: NSObject, NSStreamDelegate {
         
     }
     
-    func messageReceived(message : NSString)
-    {
-        print("message received : \(message)")
+    //MARK: Close stream
+    func disConnect() {
+        inputStream?.close()
+        outputStream?.close()
+        
+        delegate?.disconnectedStream()
+        
     }
+    
+    //MARK: Send Message
+    func sendMessage(message : NSString) {
+        let data : NSData = NSData(data:(message.dataUsingEncoding(NSASCIIStringEncoding))!)
+        outputStream?.write(UnsafePointer<UInt8>(data.bytes), maxLength: data.length)
+    }
+    
     
     
 }
